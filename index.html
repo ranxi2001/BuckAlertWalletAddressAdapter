@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聪明钱钱包地址批量转换器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .column {
+            flex: 1;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            margin: 10px 0;
+        }
+        .format-select {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>聪明钱钱包地址批量转换器</h1>
+    
+    <div class="container">
+        <div class="column">
+            <h3>输入</h3>
+            <div class="format-select">
+                <label>输入格式：</label>
+                <select id="inputFormat">
+                    <option value="space">空格式 (Diting)</option>
+                    <option value="colon">冒号式 (GMGN)</option>
+                    <option value="comma">逗号式 (Chain.fm)</option>
+                </select>
+            </div>
+            <textarea id="inputText" placeholder="请粘贴需要转换的地址..."></textarea>
+        </div>
+        
+        <div class="column">
+            <h3>输出</h3>
+            <div class="format-select">
+                <label>输出格式：</label>
+                <select id="outputFormat">
+                    <option value="space">空格式 (Diting)</option>
+                    <option value="colon">冒号式 (GMGN)</option>
+                    <option value="comma">逗号式 (Chain.fm)</option>
+                </select>
+            </div>
+            <textarea id="outputText" readonly></textarea>
+        </div>
+    </div>
+
+    <button onclick="convertFormat()">转换</button>
+
+    <script>
+        function convertFormat() {
+            // 获取输入和输出格式
+            const inputFormat = document.getElementById('inputFormat').value;
+            const outputFormat = document.getElementById('outputFormat').value;
+            
+            // 获取输入文本
+            const inputText = document.getElementById('inputText').value.trim();
+            if (!inputText) {
+                alert('请输入需要转换的地址！');
+                return;
+            }
+
+            // 将输入文本转换为统一的数据结构 [{address, name}]
+            let addressList = parseInput(inputText, inputFormat);
+            
+            // 将统一数据结构转换为目标格式
+            let result = formatOutput(addressList, outputFormat);
+            
+            // 显示结果
+            document.getElementById('outputText').value = result;
+        }
+
+        function parseInput(text, format) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const addressList = [];
+            
+            for (const line of lines) {
+                let address, name;
+                
+                switch (format) {
+                    case 'space':
+                        // 处理空格式：address name
+                        [address, name] = line.trim().split(/\s+/);
+                        break;
+                        
+                    case 'colon':
+                        // 处理冒号式：address:name
+                        [address, name] = line.split(':');
+                        if (name) {
+                            name = name.replace(',', ''); // 移除末尾的逗号
+                        }
+                        break;
+                        
+                    case 'comma':
+                        // 处理逗号式：name,address
+                        [name, address] = line.split(',');
+                        break;
+                }
+                
+                if (address && name) {
+                    addressList.push({ address: address.trim(), name: name.trim() });
+                }
+            }
+            
+            return addressList;
+        }
+
+        function formatOutput(addressList, format) {
+            let result = [];
+            
+            for (const item of addressList) {
+                switch (format) {
+                    case 'space':
+                        // 输出空格式：address name
+                        result.push(`${item.address} ${item.name}`);
+                        break;
+                        
+                    case 'colon':
+                        // 输出冒号式：address:name,
+                        result.push(`${item.address}:${item.name},`);
+                        break;
+                        
+                    case 'comma':
+                        // 输出逗号式：name,address
+                        result.push(`${item.name},${item.address}`);
+                        break;
+                }
+            }
+            
+            return result.join('\n');
+        }
+    </script>
+</body>
+</html> 
